@@ -12,14 +12,27 @@ class Search extends Component {
       isLoading: false,
     }
     this.searchedText = "";
+    this.page = 0;
+    this.totalPages = 0;
+  }
+
+  _searchFilms() {
+    this.page = 0;
+    this.totalPages = 0;
+    this.setState({
+      films: [],
+    }, () => console.log("Page : " + this.page + " / TotalPages : " + this.totalPages + " / Nombre de films : " + this.state.films.length));
+    this._loadFilms();
   }
 
   _loadFilms() {
     if (this.searchedText.length > 0){
       this.setState({ isLoading: true });
-      getFilmsFromApiWithSearchText(this.searchedText).then(data => {
+      getFilmsFromApiWithSearchText(this.searchedText, this.page+1).then(data => {
+        this.page = data.page;
+        this.totalPages = data.total_pages;
         this.setState({ 
-          films: data.results,
+          films: [...this.state.films, ...data.results],
           isLoading: false,
         });
       });
@@ -40,26 +53,30 @@ class Search extends Component {
     }
   } 
 
-  render(){
-    console.log(this.state.isLoading);
-    
+  render(){    
     return(
       <View style={styles.main_container}>
         <TextInput 
           placeholder="Titre du Film"
           style={[styles.textInput, { marginBottom: 15 }]} 
           onChangeText={(text) => {this._handelChange(text)}}
-          onSubmitEditing={() => {this._loadFilms()}}
+          onSubmitEditing={() => {this._searchFilms()}}
         />
         <Button 
           title="Rechercher"
           style={{height: 50}}
-          onPress={() => {this._loadFilms()} } 
+          onPress={() => {this._searchFilms()} } 
         />
         <FlatList
           data={this.state.films}
           keyExtractor= {(item) => item.id.toString()}
           renderItem={({item}) => <FilmItem film={item} />}
+          onEndReachedThreshold={0.5}
+          onEndReached={() => {
+            if (this.page < this.totalPages){
+              this._loadFilms();
+            }
+          }}
         />
         {this._displayLoading()}
       </View>
