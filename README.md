@@ -1,1 +1,1 @@
-** A React-Native application to find a movie
+## A React-Native application to find a movie
