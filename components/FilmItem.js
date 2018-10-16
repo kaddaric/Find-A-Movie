@@ -8,7 +8,7 @@ class FilmItem extends Component {
     const { film, displayDetailFilm } = this.props;
     return(
       <TouchableOpacity 
-        onPress={() => displayDetailFilm(film.overview)}
+        onPress={() => displayDetailFilm(film.id)}
         style={styles.mainView}
       >
         <View>

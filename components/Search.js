@@ -53,8 +53,8 @@ class Search extends Component {
     }
   } 
 
-  _displayDetailFilm = (overview) => {
-    this.props.navigation.navigate('FilmDetail', { overview: overview });    
+  _displayDetailFilm = (idFilm) => {
+    this.props.navigation.navigate('FilmDetail', { idFilm: idFilm });    
   }
 
   render(){ 

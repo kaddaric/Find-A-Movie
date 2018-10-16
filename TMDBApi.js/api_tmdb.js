@@ -10,3 +10,12 @@ export function getFilmsFromApiWithSearchText (text, page) {
 export function getImageFromApi(name) {
   return 'https://image.tmdb.org/t/p/w300' + name;
 }
+
+// API/TMDBApi.js
+
+// Récupération du détail d'un film
+export function getFilmDetailFromApi (id) {
+  return fetch('https://api.themoviedb.org/3/movie/' + id + '?api_key=' + API_TMDB + '&language=fr')
+    .then((response) => response.json())
+    .catch((error) => console.error(error));
+}
