@@ -1,20 +1,15 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
 import Navigator from './Navigation/Navigation';
+import { Provider } from 'react-redux';
+import store from './Store/configStore';
 
 export default class App extends React.Component {
   render() {
     return (
-      <View style={ styles.container }>
+      <Provider store={store}>
         <Navigator />
-      </View>
+      </Provider>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});
