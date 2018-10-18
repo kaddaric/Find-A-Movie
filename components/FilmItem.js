@@ -1,8 +1,17 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import { getImageFromApi } from '../TMDBApi.js/api_tmdb';
+import { connect } from 'react-redux';
 
 class FilmItem extends Component {
+
+  _displayFavorite(){
+    const { film, favoriteFilms } = this.props;
+    let sourceImage = require('../images/ic_favorite.png')
+    if(favoriteFilms.findIndex(item => item.id === film.id) !== -1){
+      return <Image style={styles.favorite_image} source={sourceImage} />
+    }
+  }
 
   render(){
     const { film, displayDetailFilm } = this.props;
@@ -19,6 +28,7 @@ class FilmItem extends Component {
         </View>
         <View style={styles.contentView}>
           <View style={[styles.contentView, styles.headerView]}>
+            {this._displayFavorite()}
             <Text style={styles.titleText}>{film.title}</Text>
             <Text style={styles.secondaryText}>{film.vote_average}</Text>
           </View>
@@ -67,9 +77,18 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: 'bold',
   },
-  descriptionView: {
-
+  favorite_image: {
+    width: 15,
+    height: 15,
+    marginLeft: 10,
+    marginRight: 10,
+    alignContent: "center",
   }
 });
 
-export default FilmItem;
+const mapStateToProps = (state) => {
+  return {
+    favoriteFilms: state.favoriteFilms,
+  }
+}
+export default connect(mapStateToProps)(FilmItem);
