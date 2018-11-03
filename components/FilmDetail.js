@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import numeral from 'numeral';
-import { getFilmDetailFromApi, getImageFromApi } from '../TMDBApi.js/api_tmdb';
+import { getFilmDetailFromApi, getImageFromApi } from '../TMDBApi/api_tmdb';
 import { connect } from 'react-redux';
 
 class FilmDetail extends Component {
@@ -44,8 +44,7 @@ class FilmDetail extends Component {
 
   _displayFavoriteImage() {
     let sourceImage = require('../images/ic_favorite_border.png')
-    if (this.props.favoriteFilms.findIndex(item => item.id === this.state.film.id) !== -1) {
-      // Film dans nos favoris
+    if (this.props.favoritesFilm.findIndex(item => item.id === this.state.film.id) !== -1) {
       sourceImage = require('../images/ic_favorite.png')
     }
     return (
@@ -79,7 +78,6 @@ class FilmDetail extends Component {
             <Text>Budget : {numeral(film.budget).format('0,0[.]00 $')}</Text>
             <Text>Genre(s) : {film.genres.map(genre => genre.name).join(' / ')} </Text>
           </View>
-          
         </ScrollView>
       )
     }
@@ -140,7 +138,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {
   return {
-      favoriteFilms: state.favoriteFilms,
+      favoritesFilm: state.favoritesFilm,
     }
 }
 
