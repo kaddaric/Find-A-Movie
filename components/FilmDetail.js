@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity, Share, Alert, Platform } from 'react-native';
 import moment from 'moment';
 import numeral from 'numeral';
 import { getFilmDetailFromApi, getImageFromApi } from '../TMDBApi/api_tmdb';
@@ -13,14 +13,44 @@ class FilmDetail extends Component {
       film: undefined,
       isLoading: true,
     }
+    this._shareFilm = this._shareFilm.bind(this);
   }
 
-  componentDidMount(){    
+  static navigationOptions = ({ navigation }) => {
+    const { params } = navigation.state
+    // On accède à la fonction shareFilm et au film via les paramètres qu'on a ajouté à la navigation
+    if (params.film != undefined && Platform.OS === 'ios') {
+      return {
+          // On a besoin d'afficher une image, il faut donc passe par une Touchable une fois de plus
+          headerRight: <TouchableOpacity
+                          style={styles.share_touchable_headerrightbutton}
+                          onPress={() => params.shareFilm()}>
+                          <Image
+                            style={styles.share_image}
+                            source={require('../images/ic_share.png')} />
+                        </TouchableOpacity>
+      }
+    }
+  }
+
+  componentDidMount(){
+    // Dès que le film est chargé, on met à jour les paramètres de la navigation (avec la fonction _updateNavigationParams) pour afficher le bouton de partage
+    const favoriteFilmIndex = this.props.favoritesFilm.findIndex(item => item.id === this.props.navigation.state.params.idFilm)
+    if (favoriteFilmIndex !== -1) { 
+      this.setState({
+        film: this.props.favoritesFilm[favoriteFilmIndex]
+      }, () => { this._updateNavigationParams() })
+      return
+    }  
+    this.setState({
+      isLoading: true,
+    })
+ 
     getFilmDetailFromApi(this.props.navigation.state.params.idFilm).then(data => 
       this.setState({
         film: data,
         isLoading: false,
-      })
+      }), () => {this._updateNavigationParams}
     )
   }
 
@@ -83,12 +113,59 @@ class FilmDetail extends Component {
     }
   }
 
+  // Fonction pour faire passer la fonction _shareFilm et le film aux paramètres de la navigation. Ainsi on aura accès à ces données au moment de définir le headerRight
+  _updateNavigationParams() {
+    this.props.navigation.setParams({
+      shareFilm: this._shareFilm,
+      film: this.state.film
+    })
+  }
+
+  _shareFilm() {
+    const { film } = this.state
+    Share.share({ title: film.title, message: film.overview })
+      .then(
+        Alert.alert(
+          'Succès',
+          'Film partagé',
+          [
+            {text: 'OK', onPress: () => {}},
+          ]
+        )
+      )
+      .catch(err =>
+        Alert.alert(
+          'Echec',
+          'Film non partagé',
+          [
+            {text: 'OK', onPress: () => {}},
+          ]
+        )
+      )
+  }
+
+  _displayFloatingActionButton() {
+    const { film } = this.state
+    if (film != undefined && Platform.OS === 'android') { // Uniquement sur Android et lorsque le film est chargé
+      return (
+        <TouchableOpacity
+          style={styles.share_touchable_floatingactionbutton}
+          onPress={() => this._shareFilm()}>
+          <Image
+            style={styles.share_image}
+            source={require('../images/ic_share.png')} />
+        </TouchableOpacity>
+      )
+    }
+  }
+
   render() {        
     return (
-      <View style={styles.main_container}>
+      <SafeAreaView style={styles.main_container}>
         {this._displayLoading()}
         {this._displayFilm()}
-      </View>
+        {this._displayFloatingActionButton()}
+      </SafeAreaView>
     );
   }
 }
@@ -96,6 +173,24 @@ class FilmDetail extends Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1,
+  },
+  share_touchable_floatingactionbutton: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    right: 30,
+    bottom: 30,
+    borderRadius: 30,
+    backgroundColor: '#e91e63',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  share_image: {
+    width: 30,
+    height: 30
+  },
+  share_touchable_headerrightbutton: {
+    marginRight: 8
   },
   loading_container: {
     position: 'absolute',
